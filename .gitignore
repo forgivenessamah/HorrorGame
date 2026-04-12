@@ -97,3 +97,9 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+#Downloaded assets(Asset Store)
+Assets/NatureStarterKit2/
+Assets/NatureStarterKit2.meta
+Assets/_TerrainAutoUpgrade/
+Assets/_TerrainAutoUpgrade.meta
