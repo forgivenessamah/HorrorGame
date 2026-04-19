@@ -5,7 +5,7 @@ using UnityEngine.AI;
 public class SlenderAI : MonoBehaviour
 {
     [Header("Teleport Positions")]
-    public Transform[] teleportPositions; // glisse tes 3 positions ici
+    public Transform[] teleportPositions; // glisse les 8 positions ici
 
     [Header("Player")]
     public Transform player;
@@ -30,17 +30,28 @@ public class SlenderAI : MonoBehaviour
 
     void Update()
     {
-        // L'ennemi regarde toujours le joueur
+        // L'ennemi regarde toujours le joueur (pour être effrayant)
         transform.LookAt(new Vector3(
             player.position.x,
             transform.position.y,
             player.position.z
         ));
 
-        // L'ennemi se déplace vers le joueur
-        // Vitesse augmente avec le threat level
-        agent.speed = Mathf.Lerp(2f, 7f, threatLevel);
-        agent.SetDestination(player.position);
+        // NOUVELLE LOGIQUE : Est-ce que le joueur le regarde ?
+        if (IsPlayerLookingAtEnemy())
+        {
+            // Le joueur le regarde : on fige le monstre sur place
+            agent.isStopped = true;
+        }
+        else
+        {
+            // Le joueur ne le regarde pas : le monstre est autorisé à avancer
+            agent.isStopped = false;
+
+            // Vitesse augmente avec le threat level
+            agent.speed = Mathf.Lerp(2f, 7f, threatLevel);
+            agent.SetDestination(player.position);
+        }
     }
 
     IEnumerator TeleportRoutine()
