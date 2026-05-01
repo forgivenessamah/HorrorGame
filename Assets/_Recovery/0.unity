@@ -323,7 +323,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleMove
   speed: 10
-  rotationSpeed: 100
+  rotationSpeed: 150
 --- !u!143 &452935827
 CharacterController:
   m_ObjectHideFlags: 0

@@ -1,21 +1,24 @@
 using UnityEngine;
 
-public class PlayerControllerFPS : MonoBehaviour
+public class SimpleMove : MonoBehaviour
 {
-    public float moveSpeed = 5.0f;
-    public float rotationSpeed = 150.0f;
+    public float speed = 10.0f;
+    public float rotationSpeed = 100.0f;
 
     void Update()
     {
-        // 1. ROTATION (Tourner à gauche et à droite avec Q/D ou Flèches)
-        float rotation = Input.GetAxis("Horizontal") * rotationSpeed * Time.deltaTime;
-        transform.Rotate(0, rotation, 0);
+        // Récupère les entrées clavier (Z,Q,S,D ou Flèches)
+        float translation = Input.GetAxis("Vertical") * speed;
+        float rotation = Input.GetAxis("Horizontal") * rotationSpeed;
 
-        // 2. AVANCER / RECULER (Avec Z/S ou Flèches)
-        float move = Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
-        transform.Translate(0, 0, move);
-        
-        // 3. FOCUS SOURIS (Optionnel pour ton confort)
-        // Clique dans la fenêtre Game pour que le clavier réagisse
+        // On multiplie par Time.deltaTime pour que le mouvement soit fluide
+        translation *= Time.deltaTime;
+        rotation *= Time.deltaTime;
+
+        // Avancer / Reculer
+        transform.Translate(0, 0, translation);
+
+        // Tourner sur soi-même (Rotation gauche/droite)
+        transform.Rotate(0, rotation, 0);
     }
 }
