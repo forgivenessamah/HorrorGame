@@ -10,6 +10,10 @@ public class pickupLetter : MonoBehaviour
     public bool interactable;
     public static int pagesCollected;
     public Text collectText;
+    void start()
+    {
+        pagesCollected = 0;
+    }
 
     void OnTriggerStay(Collider other)
     {
