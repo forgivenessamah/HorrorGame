@@ -18,7 +18,7 @@ public class pickupLetter : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("MainCamera"))
+        if (other.CompareTag("Player") || other.CompareTag("MainCamera"))
         {
             intText.SetActive(true);
             interactable = true;
@@ -26,7 +26,7 @@ public class pickupLetter : MonoBehaviour
     }
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("MainCamera"))
+        if (other.CompareTag("Player") || other.CompareTag("MainCamera"))
         {
             intText.SetActive(false);
             interactable = false;
@@ -39,7 +39,7 @@ public class pickupLetter : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E))
             {
                 pagesCollected = pagesCollected + 1;
-                if(monster.active == false)
+                if(monster != null && !monster.activeSelf)
                 {
                     monster.SetActive(true);
                 }

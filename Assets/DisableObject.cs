@@ -7,16 +7,23 @@ public class DisableObject : MonoBehaviour
     public GameObject Obj;
     public float activeTime;
 
+    private bool isDisabling = false;
+
     void Update()
     {
-        if (Obj.active == true)
+        if (Obj != null && Obj.activeSelf && !isDisabling)
         {
             StartCoroutine(Disableobj());
         }
     }
     IEnumerator Disableobj()
     {
+        isDisabling = true;
         yield return new WaitForSeconds(activeTime);
-        Obj.SetActive(false);
+        if (Obj != null)
+        {
+            Obj.SetActive(false);
+        }
+        isDisabling = false;
     }
 }
