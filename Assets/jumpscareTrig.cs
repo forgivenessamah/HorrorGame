@@ -8,23 +8,32 @@ public class jumpscareTrig : MonoBehaviour
     public GameObject playerObj, jumpscareCam, ambianceLayers;
     public Animator monsterAnim;
     public string sceneName;
-    public float jumpscareTime;
+    public float jumpscareTime = 2.5f; // Valeur par défaut de sécurité si oublié dans l'inspecteur
+
+    private bool hasTriggered = false; // Sécurité anti-double déclenchement
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        // Si le joueur touche le trigger et qu'on n'a pas déjà déclenché le jumpscare
+        if (other.CompareTag("Player") && !hasTriggered)
         {
+            hasTriggered = true;
+
             playerObj.SetActive(false);
             jumpscareCam.SetActive(true);
-            ambianceLayers.SetActive(false);
+            
+            if (ambianceLayers != null) ambianceLayers.SetActive(false);
+            
+            if (monsterAnim != null) monsterAnim.SetTrigger("jumpscare");
+
             StartCoroutine(changeScene());
-            monsterAnim.SetTrigger("jumpscare");
         }
     }
 
     IEnumerator changeScene()
     {
+        // Attend le temps défini avant de reset
         yield return new WaitForSeconds(jumpscareTime);
-        SceneManager.LoadScene(sceneName); // Correction ici !
+        SceneManager.LoadScene(sceneName); 
     }
 }
