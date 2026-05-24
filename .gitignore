@@ -106,3 +106,7 @@ Assets/HDRPDefaultResources/
 Assets/TerrainSampleAssets/
 Assets/SkySeries Freebie/
 Assets/Grass And Flowers Pack 1/
+
+# MCP For Unity package
+Packages/com.coplaydev.unity-mcp/
+Packages/packages-lock.json
