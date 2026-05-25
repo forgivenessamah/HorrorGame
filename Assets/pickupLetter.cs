@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class pickupLetter : MonoBehaviour
@@ -44,19 +45,27 @@ public class pickupLetter : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E))
             {
                 pagesCollected = pagesCollected + 1;
-                
-                // Correction de la syntaxe obsolète 'active' -> 'activeSelf'
-                if (monster != null && !monster.activeSelf)
+
+                if (monster != null && pagesCollected == 1)
                 {
+                    Vector3 spawnPosition = monster.transform.position;
                     if (playerTransform != null)
                     {
-                        // Positionne le Slender à 25 unités derrière le joueur
-                        Vector3 spawnPosition = playerTransform.position - (playerTransform.forward * 25f);
-                        spawnPosition.y = playerTransform.position.y; // Aligné au sol
-                        monster.transform.position = spawnPosition;
+                        spawnPosition = playerTransform.position - (playerTransform.forward * 25f);
+                        spawnPosition.y = playerTransform.position.y;
+                    }
+
+                    monster.transform.position = spawnPosition;
+
+                    NavMeshAgent agent = monster.GetComponent<NavMeshAgent>();
+                    if (agent != null)
+                    {
+                        agent.enabled = true;
+                        agent.Warp(spawnPosition);
                     }
 
                     monster.SetActive(true);
+                    PlayerCatchHandler.NotifyMonsterSpawned();
                 }
 
                 collectText.text = pagesCollected + "/8 pages";

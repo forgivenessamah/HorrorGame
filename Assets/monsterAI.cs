@@ -12,8 +12,19 @@ public class monsterAI : MonoBehaviour
 
     void Update()
     {
+        if (pickupLetter.pagesCollected == 0)
+        {
+            if (ai.enabled)
+                ai.enabled = false;
+            return;
+        }
+
+        if (!ai.enabled)
+            ai.enabled = true;
+
         dest = player.position;
         ai.destination = dest;
+
         if(pickupLetter.pagesCollected == 1)
         {
             ai.speed = 1.5f;
