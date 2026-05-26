@@ -1652,7 +1652,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 514de5400654d9e45a8e6d028c4071aa, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 514de5400654d9e45a8e6d028c4071aa, type: 3}
       propertyPath: m_Controller
@@ -2572,6 +2572,7 @@ GameObject:
   - component: {fileID: 905901197}
   - component: {fileID: 905901196}
   - component: {fileID: 905901195}
+  - component: {fileID: 905901199}
   m_Layer: 0
   m_Name: kill trigger
   m_TagString: Untagged
@@ -2615,6 +2616,7 @@ MonoBehaviour:
   sceneName: scene_environment
   staticDuration: 3
   catchGracePeriod: 4
+  jumpscare: {fileID: 905901199}
 --- !u!65 &905901196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2693,6 +2695,25 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 905901193}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &905901199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 905901193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a17f41ac7c062ee4b9bb3ee8b4744997, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::jumpscareTrig
+  playerObj: {fileID: 1699072330}
+  jumpscareCam: {fileID: 1058733841}
+  ambianceLayers: {fileID: 693451314}
+  monsterAnim: {fileID: 581595393}
+  sceneName: scene_environment
+  jumpscareTime: 2.5
+  reloadSceneAfterJumpscare: 0
 --- !u!1001 &915609690
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4498,33 +4519,6 @@ MonoBehaviour:
   runningSound: {fileID: 848217036}
   walkSpeed: 1
   runSpeed: 3
---- !u!54 &1699072357
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1699072330}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!114 &1699072358
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4537,18 +4531,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d5f4725b34896a4a8fc5bc8d6c3d733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthManager
-  maxHealth: 100
-  currentHealth: 100
-  baseDrainRate: 0.8
-  drainPerPage: 0.4
-  baseRechargeRate: 0.8
-  rechargeReductionPerPage: 0.08
-  minRechargeRate: 0.08
+  maxSanity: 100
+  currentSanity: 100
+  drainPerPage: 0.35
+  maxProximityDrain: 2.2
+  lookAtSlenderDrain: 1.5
+  slenderAwareDistance: 18
+  catchDistance: 1.25
+  lookAngleDegrees: 40
   playerTransform: {fileID: 1699072344}
   slenderTransform: {fileID: 581595394}
-  slenderDrainDistance: 15
+  playerCamera: {fileID: 0}
   healthSlider: {fileID: 535829208}
   healthText: {fileID: 0}
+  hideBarUntilHuntStarts: 1
 --- !u!1 &1699950800
 GameObject:
   m_ObjectHideFlags: 0
@@ -5371,9 +5367,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1699072351}
-    - targetCorrespondingSourceObject: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1699072357}
     - targetCorrespondingSourceObject: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1699072358}

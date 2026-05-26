@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DisableObject : MonoBehaviour
@@ -7,16 +6,22 @@ public class DisableObject : MonoBehaviour
     public GameObject Obj;
     public float activeTime;
 
+    bool disableScheduled;
+
     void Update()
     {
-        if (Obj.active == true)
-        {
-            StartCoroutine(Disableobj());
-        }
+        if (Obj == null || !Obj.activeSelf || disableScheduled)
+            return;
+
+        disableScheduled = true;
+        StartCoroutine(Disableobj());
     }
+
     IEnumerator Disableobj()
     {
         yield return new WaitForSeconds(activeTime);
-        Obj.SetActive(false);
+        if (Obj != null)
+            Obj.SetActive(false);
+        disableScheduled = false;
     }
 }

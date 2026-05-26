@@ -18,6 +18,9 @@ public class PlayerCatchHandler : MonoBehaviour
     public float staticDuration = 3f;
     public float catchGracePeriod = 4f;
 
+    [Header("Jumpscare")]
+    public jumpscareTrig jumpscare;
+
     static float monsterSpawnTime = -999f;
     bool hasTriggered;
 
@@ -51,16 +54,16 @@ public class PlayerCatchHandler : MonoBehaviour
         if (staticOverlay != null)
             staticOverlay.SetActive(false);
 
+        if (jumpscare == null)
+            jumpscare = GetComponent<jumpscareTrig>();
+
         EnsureVideoPlayer();
-        HealthManager.EnsureExists();
     }
 
     void Update()
     {
         if (!hasTriggered && HealthManager.Instance != null && HealthManager.Instance.currentHealth <= 0f)
-        {
             TriggerDeath();
-        }
     }
 
     void EnsureVideoPlayer()
@@ -99,13 +102,11 @@ public class PlayerCatchHandler : MonoBehaviour
         if (Time.time - monsterSpawnTime < gracePeriod)
             return;
 
-        hasTriggered = true;
-        StartCoroutine(DeathSequence());
+        TriggerDeath();
     }
 
     float GetGracePeriodForPages(int pages)
     {
-        // Page 1: 3.5 seconds, Page 8: 0.7 seconds, linear interpolation
         return Mathf.Clamp(3.5f - (pages - 1) * 0.4f, 0.7f, 3.5f);
     }
 
@@ -116,7 +117,10 @@ public class PlayerCatchHandler : MonoBehaviour
 
         SC_FPSController fps = playerObj.GetComponent<SC_FPSController>();
         if (fps != null)
+        {
             fps.canMove = false;
+            fps.enabled = false;
+        }
 
         CharacterController controller = playerObj.GetComponent<CharacterController>();
         if (controller != null)
@@ -141,8 +145,13 @@ public class PlayerCatchHandler : MonoBehaviour
     {
         FreezePlayer();
 
-        if (ambianceLayers != null)
-            ambianceLayers.SetActive(false);
+        if (jumpscare != null)
+            yield return jumpscare.PlayJumpscare();
+        else
+        {
+            if (ambianceLayers != null)
+                ambianceLayers.SetActive(false);
+        }
 
         EnsureVideoPlayer();
 

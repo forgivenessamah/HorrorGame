@@ -2,31 +2,54 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Slender: The Eight Pages style sanity. No drain until the first page is collected.
+/// Drain rises with each page and when Slender is nearby or in view. Static is death-only (PlayerCatchHandler).
+/// </summary>
 public class HealthManager : MonoBehaviour
 {
     public static HealthManager Instance { get; private set; }
 
-    [Header("Health Settings")]
-    public float maxHealth = 100f;
-    public float currentHealth = 100f;
-    public float baseDrainRate = 0.12f;
-    public float drainPerPage = 0.05f;
-    public float baseRechargeRate = 0.05f;
-    public float rechargeBonusPerPage = 0.03f;
-    public float maxRechargeRate = 0.12f;
-    public float alwaysDrainRate = 0.005f;
-    public float drainAccelerationPerSecond = 0.002f;
-    // Maximum added drain from the time-based escalation (prevents impossible spikes)
-    public float maxTimeDrainBonus = 0.05f;
+    [Header("Sanity")]
+    public float maxSanity = 100f;
+    public float currentSanity = 100f;
+
+    [Header("Eight Pages - hunt drain (after page 1)")]
+    [Tooltip("Passive sanity loss per second, multiplied by pages collected.")]
+    public float drainPerPage = 0.35f;
+    [Tooltip("Extra drain while Slender is within range (scales up when closer).")]
+    public float maxProximityDrain = 2.2f;
+    [Tooltip("Extra drain per second when you are looking at Slender.")]
+    public float lookAtSlenderDrain = 1.5f;
+    public float slenderAwareDistance = 18f;
+    public float catchDistance = 1.25f;
+    [Tooltip("How wide your view cone is for 'seeing' Slender.")]
+    public float lookAngleDegrees = 40f;
+
+    [Header("References")]
     public Transform playerTransform;
     public Transform slenderTransform;
-    public float slenderDrainDistance = 15f;
+    public Camera playerCamera;
 
     [Header("UI")]
     public Slider healthSlider;
     public Text healthText;
+    public bool hideBarUntilHuntStarts = true;
 
     bool isDead;
+    Image sanityFillImage;
+
+    public float currentHealth
+    {
+        get => currentSanity;
+        set => currentSanity = value;
+    }
+
+    public float maxHealth
+    {
+        get => maxSanity;
+        set => maxSanity = value;
+    }
 
     public static void EnsureExists()
     {
@@ -41,15 +64,18 @@ public class HealthManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
             return;
         }
 
         Instance = this;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        currentSanity = maxSanity;
 
         if (playerTransform == null && Camera.main != null)
             playerTransform = Camera.main.transform;
+
+        if (playerCamera == null && Camera.main != null)
+            playerCamera = Camera.main;
 
         if (slenderTransform == null)
             FindSlender();
@@ -57,6 +83,8 @@ public class HealthManager : MonoBehaviour
         if (healthSlider == null)
             CreateHealthUI();
 
+        CacheFillImage();
+        UpdateBarVisibility();
         UpdateUI();
     }
 
@@ -66,86 +94,81 @@ public class HealthManager : MonoBehaviour
             Instance = null;
     }
 
-    float pageTimeSinceCollected = 0f;
-
     void Update()
     {
         if (isDead)
             return;
 
         int pages = Mathf.Max(0, pickupLetter.pagesCollected);
-        float drainRate = alwaysDrainRate;
-        float rechargeRate = 0f;
 
-        bool slenderNearby = false;
-        float distanceToSlender = float.MaxValue;
-        float drainMultiplier = 0f;
-
-        if (playerTransform != null && slenderTransform != null)
+        if (pages == 0)
         {
-            Vector3 diff = playerTransform.position - slenderTransform.position;
-            distanceToSlender = diff.magnitude;
-            slenderNearby = distanceToSlender <= slenderDrainDistance;
+            currentSanity = maxSanity;
+            UpdateBarVisibility();
+            UpdateUI();
+            return;
+        }
 
-            // Proximity-based drain scaling: closer = faster drain
-            if (slenderNearby)
+        UpdateBarVisibility();
+
+        if (slenderTransform == null)
+            FindSlender();
+
+        float drain = drainPerPage * pages;
+
+        if (IsSlenderHunting())
+        {
+            float distance = Vector3.Distance(GetPlayerPosition(), slenderTransform.position);
+            if (distance <= slenderAwareDistance)
             {
-                drainMultiplier = 1f - (distanceToSlender / slenderDrainDistance);
-                drainMultiplier = Mathf.Clamp01(drainMultiplier);
+                float proximity = 1f - Mathf.Clamp01(distance / slenderAwareDistance);
+                proximity = proximity * proximity;
+                drain += maxProximityDrain * proximity * (0.6f + pages * 0.08f);
+
+                if (distance <= catchDistance)
+                    drain += maxProximityDrain * 2f;
+
+                if (IsLookingAtSlender())
+                    drain += lookAtSlenderDrain * (0.5f + proximity);
             }
-
-            // Force health to 0 when Slender is about to catch (< 1 unit away)
-            if (distanceToSlender < 1f)
-                currentHealth = 0f;
         }
 
-        // No direct recharge from pages any more. Pages increase drain slightly.
-        rechargeRate = 0f;
-        if (pages > 0)
-        {
-            pageTimeSinceCollected += Time.deltaTime;
-        }
-        else
-        {
-            pageTimeSinceCollected = 0f;
-        }
-
-        if (slenderNearby)
-        {
-            // Health loses only a little at first, but much more when Slender is close.
-            float proximityDrain = baseDrainRate * (0.12f + drainMultiplier * 0.4f);
-            drainRate += proximityDrain;
-
-            // Time-based escalation only matters when Slender is actually near.
-            float pageFactor = Mathf.Pow(pages, 0.5f); // smooth growth with diminishing returns
-            float timeDrainBonus = 0f;
-            if (pages > 0)
-            {
-                timeDrainBonus = drainAccelerationPerSecond * pageTimeSinceCollected * pageFactor;
-                timeDrainBonus = Mathf.Min(timeDrainBonus, maxTimeDrainBonus);
-            }
-            drainRate += timeDrainBonus;
-
-            // Small additional drain per page when Slender is near.
-            float perPageImmediateDrain = drainPerPage * 0.04f * pages;
-            drainRate += perPageImmediateDrain;
-        }
-        else
-        {
-            // Very gentle drain when Slender is not nearby.
-            float perPageImmediateDrain = drainPerPage * 0.02f * pages;
-            drainRate += perPageImmediateDrain;
-        }
-
-        float netRate = drainRate - rechargeRate;
-        netRate = Mathf.Max(0f, netRate);
-        currentHealth -= netRate * Time.deltaTime;
-
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        currentSanity -= drain * Time.deltaTime;
+        currentSanity = Mathf.Clamp(currentSanity, 0f, maxSanity);
         UpdateUI();
 
-        if (currentHealth <= 0f)
+        if (currentSanity <= 0f)
             BeginDeath();
+    }
+
+    bool IsSlenderHunting()
+    {
+        return slenderTransform != null && slenderTransform.gameObject.activeInHierarchy;
+    }
+
+    Vector3 GetPlayerPosition()
+    {
+        if (playerTransform != null)
+            return playerTransform.position;
+        return transform.position;
+    }
+
+    bool IsLookingAtSlender()
+    {
+        if (slenderTransform == null)
+            return false;
+
+        Transform viewTransform = playerCamera != null ? playerCamera.transform : playerTransform;
+        if (viewTransform == null)
+            return false;
+
+        Vector3 toSlender = slenderTransform.position - viewTransform.position;
+        float dist = toSlender.magnitude;
+        if (dist < 0.01f)
+            return true;
+
+        float angle = Vector3.Angle(viewTransform.forward, toSlender.normalized);
+        return angle <= lookAngleDegrees;
     }
 
     void BeginDeath()
@@ -161,16 +184,62 @@ public class HealthManager : MonoBehaviour
             SceneManager.LoadScene("scene_environment");
     }
 
+    public void OnHuntStarted()
+    {
+        currentSanity = maxSanity;
+        UpdateBarVisibility();
+        UpdateUI();
+    }
+
+    void UpdateBarVisibility()
+    {
+        if (healthSlider == null)
+            return;
+
+        bool show = !hideBarUntilHuntStarts || pickupLetter.pagesCollected > 0;
+        healthSlider.gameObject.SetActive(show);
+    }
+
     void UpdateUI()
     {
         if (healthSlider != null)
         {
-            healthSlider.maxValue = maxHealth;
-            healthSlider.value = currentHealth;
+            healthSlider.maxValue = maxSanity;
+            healthSlider.value = currentSanity;
         }
 
         if (healthText != null)
-            healthText.text = $"Health: {Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+        {
+            int pages = pickupLetter.pagesCollected;
+            healthText.text = pages == 0
+                ? "Sanity: --"
+                : $"Sanity: {Mathf.CeilToInt(currentSanity)} / {Mathf.CeilToInt(maxSanity)}";
+        }
+
+        UpdateSanityColor();
+    }
+
+    void UpdateSanityColor()
+    {
+        if (sanityFillImage == null)
+            CacheFillImage();
+
+        if (sanityFillImage == null)
+            return;
+
+        float t = 1f - (currentSanity / maxSanity);
+        sanityFillImage.color = Color.Lerp(
+            new Color(0.25f, 0.95f, 0.3f),
+            new Color(0.95f, 0.15f, 0.1f),
+            t);
+    }
+
+    void CacheFillImage()
+    {
+        if (healthSlider == null || healthSlider.fillRect == null)
+            return;
+
+        sanityFillImage = healthSlider.fillRect.GetComponent<Image>();
     }
 
     void FindSlender()
@@ -196,7 +265,7 @@ public class HealthManager : MonoBehaviour
             scaler.matchWidthOrHeight = 0.5f;
         }
 
-        GameObject root = new GameObject("HealthBar", typeof(RectTransform));
+        GameObject root = new GameObject("SanityBar", typeof(RectTransform));
         root.transform.SetParent(canvas.transform, false);
 
         RectTransform rootRect = root.GetComponent<RectTransform>();
@@ -221,23 +290,23 @@ public class HealthManager : MonoBehaviour
         GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
         fillArea.transform.SetParent(root.transform, false);
         RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
-        fillAreaRect.anchorMin = new Vector2(0f, 0f);
-        fillAreaRect.anchorMax = new Vector2(1f, 1f);
+        fillAreaRect.anchorMin = Vector2.zero;
+        fillAreaRect.anchorMax = Vector2.one;
         fillAreaRect.offsetMin = new Vector2(5f, 5f);
         fillAreaRect.offsetMax = new Vector2(-5f, -5f);
 
         GameObject fill = new GameObject("Fill", typeof(RectTransform));
         fill.transform.SetParent(fillArea.transform, false);
         RectTransform fillRect = fill.GetComponent<RectTransform>();
-        fillRect.anchorMin = new Vector2(0f, 0f);
-        fillRect.anchorMax = new Vector2(1f, 1f);
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
         fillRect.offsetMin = Vector2.zero;
         fillRect.offsetMax = Vector2.zero;
 
         Image fillImage = fill.AddComponent<Image>();
         fillImage.sprite = uiSprite;
         fillImage.type = Image.Type.Sliced;
-        fillImage.color = new Color(0.2f, 0.95f, 0.2f, 0.95f);
+        fillImage.color = new Color(0.25f, 0.95f, 0.3f);
 
         slider.fillRect = fillRect;
 
@@ -255,13 +324,13 @@ public class HealthManager : MonoBehaviour
         handleImage.color = new Color(1f, 1f, 1f, 0.2f);
 
         slider.handleRect = handleRect;
-        slider.value = currentHealth;
+        slider.value = currentSanity;
 
-        GameObject labelObject = new GameObject("HealthText", typeof(RectTransform));
+        GameObject labelObject = new GameObject("SanityText", typeof(RectTransform));
         labelObject.transform.SetParent(root.transform, false);
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.anchorMin = new Vector2(0f, 0f);
-        labelRect.anchorMax = new Vector2(1f, 1f);
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
         labelRect.offsetMin = Vector2.zero;
         labelRect.offsetMax = Vector2.zero;
 
@@ -270,10 +339,11 @@ public class HealthManager : MonoBehaviour
         label.fontSize = 16;
         label.alignment = TextAnchor.MiddleCenter;
         label.color = Color.white;
-        label.text = $"Health: {Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+        label.text = "Sanity: --";
         label.raycastTarget = false;
 
         healthSlider = slider;
         healthText = label;
+        sanityFillImage = fillImage;
     }
 }

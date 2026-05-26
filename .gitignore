@@ -108,6 +108,6 @@ Assets/TerrainSampleAssets/
 Assets/SkySeries Freebie/
 Assets/Grass And Flowers Pack 1/
 
-# MCP For Unity package
+# Local MCP package cache (not a project dependency)
 Packages/com.coplaydev.unity-mcp/
-Packages/packages-lock.json
+Library/MCPForUnity/
