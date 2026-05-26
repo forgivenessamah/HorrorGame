@@ -2558,7 +2558,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 471d672739ea8ca46aef30538cd665f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::flashlightMovement
-  flashlightAnim: {fileID: 1699072338}
+  targetTransform: {fileID: 0}
+  swayAngle: 5
+  swaySpeed: 3
+  mouseLagAmount: 4
+  mouseLagSmoothness: 6
 --- !u!1 &905901193
 GameObject:
   m_ObjectHideFlags: 0
@@ -4475,29 +4479,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 471d672739ea8ca46aef30538cd665f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::flashlightMovement
-  flashlightAnim: {fileID: 1699072338}
---- !u!95 &1699072338
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1699072330}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 574b3d5b1caa89949b12f47f1186f8c8, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  targetTransform: {fileID: 0}
+  swayAngle: 20
+  swaySpeed: 1
+  mouseLagAmount: 4
+  mouseLagSmoothness: 6
 --- !u!4 &1699072344 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8041021659061982404, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
@@ -5270,7 +5256,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1697978349187530123, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_Intensity
-      value: 1.5
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697978349187530123, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
+      propertyPath: m_SpotAngle
+      value: 53
       objectReference: {fileID: 0}
     - target: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_Name
@@ -5302,7 +5292,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: walkingSpeed
-      value: 10
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8041021659061982404, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_LocalScale.y
@@ -5358,9 +5348,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 848217037}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1699072338}
     - targetCorrespondingSourceObject: {fileID: 4303657245939059746, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1699072337}

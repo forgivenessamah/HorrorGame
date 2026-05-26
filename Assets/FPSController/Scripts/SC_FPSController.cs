@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +19,7 @@ public class SC_FPSController : MonoBehaviour
     float rotationX = 0;
 
     [HideInInspector]
+    [System.NonSerialized]
     public bool canMove = true;
 
     void Start()
@@ -54,21 +55,20 @@ public class SC_FPSController : MonoBehaviour
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && characterController.isGrounded)
+        if (characterController.isGrounded)
         {
-            moveDirection.y = jumpSpeed;
+            if (Input.GetButton("Jump"))
+            {
+                moveDirection.y = jumpSpeed;
+            }
+            else
+            {
+                moveDirection.y = -2.0f; // Small constant downward force to stay grounded
+            }
         }
         else
         {
-            moveDirection.y = movementDirectionY;
-        }
-
-        // Apply gravity. Gravity is multiplied by deltaTime twice (once here, and once below
-        // when the moveDirection is multiplied by deltaTime). This is because gravity should be applied
-        // as an acceleration (ms^-2)
-        if (!characterController.isGrounded)
-        {
-            moveDirection.y -= gravity * Time.deltaTime;
+            moveDirection.y = movementDirectionY - (gravity * Time.deltaTime);
         }
 
         // Move the controller
