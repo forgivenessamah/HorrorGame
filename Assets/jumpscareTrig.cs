@@ -1,39 +1,89 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class jumpscareTrig : MonoBehaviour
 {
-    public GameObject playerObj, jumpscareCam, ambianceLayers;
+    public GameObject playerObj;
+    public GameObject jumpscareCam;
+    public GameObject ambianceLayers;
     public Animator monsterAnim;
     public string sceneName;
-    public float jumpscareTime = 2.5f; // Valeur par défaut de sécurité si oublié dans l'inspecteur
+    public float jumpscareTime = 2.5f;
+    public bool reloadSceneAfterJumpscare;
 
-    private bool hasTriggered = false; // Sécurité anti-double déclenchement
+    bool hasTriggered;
+
+    void Awake()
+    {
+        hasTriggered = false;
+
+        if (jumpscareCam != null)
+            jumpscareCam.SetActive(false);
+    }
 
     void OnTriggerEnter(Collider other)
     {
-        // Si le joueur touche le trigger et qu'on n'a pas déjà déclenché le jumpscare
-        if (other.CompareTag("Player") && !hasTriggered)
-        {
-            hasTriggered = true;
+        if (!other.CompareTag("Player") || hasTriggered)
+            return;
 
-            playerObj.SetActive(false);
-            jumpscareCam.SetActive(true);
-            
-            if (ambianceLayers != null) ambianceLayers.SetActive(false);
-            
-            if (monsterAnim != null) monsterAnim.SetTrigger("jumpscare");
+        if (!TryBeginJumpscare())
+            return;
 
-            StartCoroutine(changeScene());
-        }
+        if (reloadSceneAfterJumpscare)
+            StartCoroutine(JumpscareWaitThenReload());
+        else
+            StartCoroutine(JumpscareWait());
     }
 
-    IEnumerator changeScene()
+    public bool TryBeginJumpscare()
     {
-        // Attend le temps défini avant de reset
+        if (hasTriggered)
+            return false;
+
+        hasTriggered = true;
+        ApplyJumpscare();
+        return true;
+    }
+
+    public IEnumerator PlayJumpscare()
+    {
+        if (!hasTriggered)
+            TryBeginJumpscare();
+
         yield return new WaitForSeconds(jumpscareTime);
-        SceneManager.LoadScene(sceneName); 
+    }
+
+    void ApplyJumpscare()
+    {
+        if (playerObj != null)
+        {
+            foreach (AudioListener listener in playerObj.GetComponentsInChildren<AudioListener>(true))
+                listener.enabled = false;
+
+            foreach (Camera cam in playerObj.GetComponentsInChildren<Camera>(true))
+                cam.enabled = false;
+        }
+
+        if (jumpscareCam != null)
+            jumpscareCam.SetActive(true);
+
+        if (ambianceLayers != null)
+            ambianceLayers.SetActive(false);
+
+        if (monsterAnim != null)
+            monsterAnim.SetTrigger("jumpscare");
+    }
+
+    IEnumerator JumpscareWait()
+    {
+        yield return new WaitForSeconds(jumpscareTime);
+    }
+
+    IEnumerator JumpscareWaitThenReload()
+    {
+        yield return new WaitForSeconds(jumpscareTime);
+        if (!string.IsNullOrEmpty(sceneName))
+            SceneManager.LoadScene(sceneName);
     }
 }

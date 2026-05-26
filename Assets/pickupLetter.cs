@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class pickupLetter : MonoBehaviour
 {
     public GameObject collectTextObj, intText, monster;
-    public Transform playerTransform; // À ASSIGNER DANS L'INSPECTEUR (Glisse ton joueur ici)
-    
+    public Transform playerTransform;
+
     public AudioSource pickupSound, ambianceLayer1, ambianceLayer2, ambianceLayer3, ambianceLayer4, ambianceLayer5, ambianceLayer6, ambianceLayer7, ambianceLayer8;
     public bool interactable;
     public static int pagesCollected;
@@ -22,70 +22,85 @@ public class pickupLetter : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("MainCamera"))
-        {
-            intText.SetActive(true);
-            interactable = true;
-        }
+        if (!other.CompareTag("MainCamera") || intText == null)
+            return;
+
+        intText.SetActive(true);
+        interactable = true;
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("MainCamera"))
-        {
-            intText.SetActive(false);
-            interactable = false;
-        }
+        if (!other.CompareTag("MainCamera") || intText == null)
+            return;
+
+        intText.SetActive(false);
+        interactable = false;
     }
 
     void Update()
     {
-        if (interactable == true)
+        if (!interactable || !Input.GetKeyDown(KeyCode.E))
+            return;
+
+        pagesCollected = pagesCollected + 1;
+
+        if (monster != null && pagesCollected == 1)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            Vector3 spawnPosition = monster.transform.position;
+            if (playerTransform != null)
             {
-                pagesCollected = pagesCollected + 1;
+                spawnPosition = playerTransform.position - (playerTransform.forward * 25f);
+                spawnPosition.y = playerTransform.position.y;
+            }
 
-                if (monster != null && pagesCollected == 1)
-                {
-                    Vector3 spawnPosition = monster.transform.position;
-                    if (playerTransform != null)
-                    {
-                        spawnPosition = playerTransform.position - (playerTransform.forward * 25f);
-                        spawnPosition.y = playerTransform.position.y;
-                    }
+            monster.transform.position = spawnPosition;
 
-                    monster.transform.position = spawnPosition;
+            NavMeshAgent agent = monster.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = true;
+                agent.Warp(spawnPosition);
+            }
 
-                    NavMeshAgent agent = monster.GetComponent<NavMeshAgent>();
-                    if (agent != null)
-                    {
-                        agent.enabled = true;
-                        agent.Warp(spawnPosition);
-                    }
-
-                    monster.SetActive(true);
+                monster.SetActive(true);
                     PlayerCatchHandler.NotifyMonsterSpawned();
+
+                    if (HealthManager.Instance != null)
+                        HealthManager.Instance.OnHuntStarted();
                 }
 
-                collectText.text = pagesCollected + "/8 pages";
-                collectTextObj.SetActive(true);
-                pickupSound.Play();
+        if (collectText != null)
+            collectText.text = pagesCollected + "/8 pages";
+        if (collectTextObj != null)
+            collectTextObj.SetActive(true);
+        if (pickupSound != null)
+            pickupSound.Play();
 
-                // Gestion des musiques d'ambiance
-                if (pagesCollected == 1) ambianceLayer1.Play();
-                if (pagesCollected == 2) ambianceLayer2.Play();
-                if (pagesCollected == 3) ambianceLayer3.Play();
-                if (pagesCollected == 4) ambianceLayer4.Play();
-                if (pagesCollected == 5) ambianceLayer5.Play();
-                if (pagesCollected == 6) ambianceLayer6.Play();
-                if (pagesCollected == 7) ambianceLayer7.Play();
-                if (pagesCollected == 8) ambianceLayer8.Play();
+        PlayAmbianceForPage(pagesCollected);
 
-                intText.SetActive(false);
-                interactable = false;
-                this.gameObject.SetActive(false); // Désactive la page ramassée
-            }
-        }
+        if (intText != null)
+            intText.SetActive(false);
+        interactable = false;
+        gameObject.SetActive(false);
+    }
+
+    void PlayAmbianceForPage(int page)
+    {
+        AudioSource layer = page switch
+        {
+            1 => ambianceLayer1,
+            2 => ambianceLayer2,
+            3 => ambianceLayer3,
+            4 => ambianceLayer4,
+            5 => ambianceLayer5,
+            6 => ambianceLayer6,
+            7 => ambianceLayer7,
+            8 => ambianceLayer8,
+            _ => null
+        };
+
+        if (layer != null)
+            layer.Play();
     }
 }
