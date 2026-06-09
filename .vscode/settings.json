@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "HorrorGame_new.slnx"
+    "dotnet.defaultSolution": "HorrorGame_Menu.slnx"
 }
