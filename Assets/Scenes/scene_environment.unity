@@ -2553,14 +2553,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 857177036}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 471d672739ea8ca46aef30538cd665f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::flashlightMovement
   targetTransform: {fileID: 0}
-  swayAngle: 5
-  swaySpeed: 3
+  swayAngle: 1
+  swaySpeed: 1
   mouseLagAmount: 4
   mouseLagSmoothness: 6
 --- !u!1 &905901193
@@ -4474,14 +4474,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1699072330}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 471d672739ea8ca46aef30538cd665f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::flashlightMovement
   targetTransform: {fileID: 0}
-  swayAngle: 1.5
-  swaySpeed: 1
+  swayAngle: 0.5
+  swaySpeed: 0.5
   mouseLagAmount: 4
   mouseLagSmoothness: 6
 --- !u!4 &1699072344 stripped
@@ -5256,7 +5256,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1697978349187530123, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_Intensity
-      value: 4
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 1697978349187530123, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_SpotAngle
@@ -5300,7 +5300,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: runningSpeed
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: walkingSpeed
