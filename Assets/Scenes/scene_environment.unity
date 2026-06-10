@@ -516,7 +516,7 @@ Transform:
   m_GameObject: {fileID: 247975448}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0028411965, y: -0.69330907, z: -0.012538986, w: 0.72052574}
-  m_LocalPosition: {x: -104.916016, y: -1.0680001, z: -224.693}
+  m_LocalPosition: {x: -103.638, y: -0.983, z: -227.523}
   m_LocalScale: {x: 0.0016, y: 1, z: 0.69999987}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4480,7 +4480,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::flashlightMovement
   targetTransform: {fileID: 0}
-  swayAngle: 20
+  swayAngle: 1.5
   swaySpeed: 1
   mouseLagAmount: 4
   mouseLagSmoothness: 6
@@ -5291,8 +5291,16 @@ PrefabInstance:
       value: 2.36
       objectReference: {fileID: 0}
     - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
+      propertyPath: jumpSpeed
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
+      propertyPath: runningSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6109968721540198212, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: walkingSpeed
-      value: 2
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8041021659061982404, guid: 8c5511ca286b3984fa7e25aad568a4a0, type: 3}
       propertyPath: m_LocalScale.y
